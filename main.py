@@ -82,24 +82,22 @@ def read_db_table(table_id, conn):
     df = relativeNumbers(bev, 's18', df, 's30to40')
     df = relativeNumbers(bev, 's19', df, 's40to50')
     df = relativeNumbers(bev, 's20', df, 's50to60')
-    df = relativeNumbers(bev, 's21', df, 's60plus')
 
     cols_y = ['s10to12', 's12to14', 's14to16', 's16to18', 's18to21']
     cols_o = ['s21to23', 's23to25', 's25to30']
     df['s10to21'] = df[cols_y].sum(axis=1)
     df['s21to30'] = df[cols_o].sum(axis=1)
-    df.drop(['s10to12', 's12to14', 's14to16', 's16to18', 's18to21', 's21to23', 's23to25', 's25to30'],
+    df.drop(['s10to12', 's12to14', 's14to16', 's16to18', 's18to21', 's21to23', 's23to25', 's25to30', 's60plus'],
             axis=1, inplace=True)
 
     # sum every s%to% column
     data = [
-        table_id,
+        #table_id,
         df['s10to21'].sum(),
         df['s21to30'].sum(),
         df['s30to40'].sum(),
         df['s40to50'].sum(),
         df['s50to60'].sum(),
-        df['s60plus'].sum()
     ]
 
     tmp = pd.Series(data)
@@ -109,24 +107,26 @@ def read_db_table(table_id, conn):
 if __name__ == '__main__':
     engine = dbconnect()
     conn = engine.connect()
+
     data = {
-        "crimeCode": ["crimeCode"],
-        "s10to21": ["s10to21"],
-        "s21to30": ["s21to30"],
-        "s30to40": ["s30to40"],
-        "s40to50": ["s40to50"],
-        "s50to60": ["s50to60"],
-        "s60plus": ["s60plus"],
+        "age": [],
+        "crime": [],
     }
     gesamt = pd.DataFrame(data)
+    gesamt.columns = ['crime_count', 'age']
     crime_keys = read_crime_keys()
     for key in crime_keys:
-        result = read_db_table(key, conn)
-        gesamt.loc[len(gesamt)] = result.tolist()
+        result = []
+        age = ["10to21", "21to30", "30to40", "40to50", "50to60"]
+        result.append(read_db_table(key, conn).tolist())
+        result.append(age)
+        temp = pd.DataFrame(result).transpose()
+        temp.columns = ['crime_count', 'age']
+        gesamt = pd.concat([gesamt, temp])
+        #gesamt.loc[len(gesamt)] = result
         if key == "143100":
             sexuelleSelbstbestimmung = gesamt
             gesamt = pd.DataFrame(data)
-            break
         if key == "234200":
             rohheitsdelikte_persFreiheit = gesamt
             gesamt = pd.DataFrame(data)
@@ -138,21 +138,41 @@ if __name__ == '__main__':
             gesamt = pd.DataFrame(data)
             break
     conn.close()
+    print("aha")
+    print(sexuelleSelbstbestimmung.corr())
 
+    """
+    # Creating a Linear Regression model on our data
+    rohheitsdelikte_persFreiheit.plot.scatter(x='age', y='crime_count')
+    einfacherDiebstahl.plot.scatter(x='age', y='crime_count')
+    schwererDiebstahl.plot.scatter(x='age', y='crime_count')
+    sexuelleSelbstbestimmung.plot.scatter(x='age', y='crime_count')
+    #sexuelleSelbstbestimmung.hist()
+    plt.show()
+    
+    lin = LinearRegression()
+    lin.fit(sexuelleSelbstbestimmung[['age']], sexuelleSelbstbestimmung['crime_count'])
+    # Creating a plot
+    ax = sexuelleSelbstbestimmung.plot.scatter(x='age', y='crime_count', alpha=.1)
+    ax.plot(sexuelleSelbstbestimmung['age'], lin.predict(sexuelleSelbstbestimmung[['age']]), c='r')
+    plt.show()
+
+    
     print(sexuelleSelbstbestimmung)
     sexuelleSelbstbestimmung = sexuelleSelbstbestimmung.transpose()
     print(sexuelleSelbstbestimmung)
 
+    data = {
+        "crimeCode": [],
+        "s10to21": [],
+        "s21to30": [],
+        "s30to40": [],
+        "s40to50": [],
+        "s50to60": [],
+        "s60plus": [],
+    } 
 
-    # Creating a Linear Regression model on our data
-    lin = LinearRegression()
-    lin.fit(sexuelleSelbstbestimmung['0'], sexuelleSelbstbestimmung['1'])
-    # Creating a plot
-    ax = sexuelleSelbstbestimmung.plot.scatter(x='0', y='1', alpha=.1)
-    ax.plot(sexuelleSelbstbestimmung['0'], lin.predict(sexuelleSelbstbestimmung['0']), c='r')
-    plt.show()
-
-    """
+  
     # plot
     print(df.corr())
     print(df.head())
