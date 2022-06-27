@@ -6,7 +6,7 @@ import numpy as np
 from statsmodels.formula.api import ols
 import statsmodels.api as sm
 
-url_ = "mysql+pymysql://root:QiLaSlBTRqYweJiZibMD@zelophed.duckdns.org:5001/v3"
+url_ = "mysql+pymysql://root:pass@zelophed.duckdns.org:5001/v3"
 pop_file = '/Users/hannah/Downloads/01-BU-BV-TVBZ-deu-ab-1987_xls.xlsx'
 pop_rtf = "/Users/hannah/Documents/4-Semester/Data Science/projekt/files/crime_keys.rtf"
 
