@@ -121,5 +121,12 @@
         plt.xlabel("Age")
         plt.ylabel("Amount of crimes committed per 100.000")
         #abline_plot(model_results=model.fit())
+        
+        
+           # Model 3
+        wls_model = sm.WLS(x_data, y_data,)
+        results = wls_model.fit()
+        print('model 3: ')
+        print(results.summary())
 
     """
